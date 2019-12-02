@@ -1,54 +1,73 @@
 import numpy as np
 from gridData import Grid
 from .skinlib import fill_exclusion_mask
-from prody import parsePDB, confProDy
+import prody as pr
 from .vdw import get_vdw_radius
 
-confProDy(verbosity='none')
+pr.confProDy(verbosity='none')
 
 class PotGrid(Grid):
 
-    def __init__(self, grid=None, edges=None, origin=None, delta=None,
+    def __init__(self, pdb_filename=None, grid=None, edges=None, origin=None, delta=None,
                  metadata=None, interpolation_spline_order=3, file_format=None):
+
         super().__init__(grid, edges, origin, delta,
                          metadata, interpolation_spline_order, file_format)
 
-    def _calc_pdb_center(self, atom_coords):
-        center = atom_coords.mean(axis=0)
-        return center
+        # hack, need to fix issue in GridDataFormats #73
+        # https://github.com/MDAnalysis/GridDataFormats/issues/73
+        if pdb_filename:
+            self._load_pdb(pdb_filename)
 
-    def get_skin_mask(self, pdb_fname, probe=3, skin=4):
-        atoms = parsePDB(pdb_fname)
+    def _load_pdb(self, pdb_filename):
+        # read pdb file and calc protein center
+        self.pdb = pr.parsePDB(pdb_filename)
+        self.protein = self.pdb.select('protein')
+        self.protein_center = pr.calcCenter(self.protein)
+        self.oe = self.origin - self.protein_center
 
-        vdw_radii = np.asarray([get_vdw_radius(a.getElement())
-                                for a in atoms], dtype='float64')
-        atom_coords = np.asarray([a.getCoords()
-                                  for a in atoms], dtype='float64')
-        pdb_center = self._calc_pdb_center(atom_coords)
-        oe = self.origin - pdb_center
+    def get_skin_mask(self, probe=3, skin_thickness=4):
+
+        vdw_radii = np.asarray([get_vdw_radius(element)
+                                for element in self.protein.getElements()], dtype='float64')
+        atom_coords = pr.getCoords(self.protein)
 
         mask1 = np.zeros(self.grid.shape, dtype=bool)
-        fill_exclusion_mask(mask1, self.delta, oe, pdb_center,
+        fill_exclusion_mask(mask1, self.delta, self.oe, self.protein_center,
                             atom_coords, vdw_radii, vdw_radii.max(), probe)
         mask1 = np.invert(mask1)
 
         mask2 = np.zeros(self.grid.shape, dtype=bool)
-        fill_exclusion_mask(mask2, self.delta, oe, pdb_center,
-                            atom_coords, vdw_radii, vdw_radii.max(), probe + skin)
-
+        fill_exclusion_mask(mask2, self.delta, self.oe, self.protein_center,
+                            atom_coords, vdw_radii, vdw_radii.max(), probe + skin_thickness)
         return mask1 * mask2
+
+    def get_sphere_mask(self, sphere_center, radius):
+        mask = np.zeros(self.grid.shape, dtype=bool)
+        fill_exclusion_mask(mask, self.delta, self.oe, self.protein_center,
+                             np.asarray(sphere_center).reshape(1, -1), np.asarray([0]), 0, radius)
+        return mask
+
+    def get_ligand_mask(self, ligand, probe=3):
+        vdw_radii = np.asarray([get_vdw_radius(element)
+                                for element in ligand.getElements()], dtype='float64')
+        atom_coords = pr.getCoords(ligand)
+        mask = np.zeros(self.grid.shape, dtype=bool)
+        fill_exclusion_mask(mask, self.delta, self.oe, self.protein_center,
+                            atom_coords, vdw_radii, vdw_radii.max(), probe)
+        return mask
 
     def apply_mask(self, mask):
         self.grid *= mask
 
-    def score(self, other, skin=True):
+    def score(self, other, intersection=True):
         """
         Calcs hodgkin SI on grid intersection.
         """
         g1arr = self.grid.ravel()
         g2arr = other.grid.ravel()
 
-        if skin:
+        if intersection:
             mask = (g1arr == 0) | (g2arr == 0)
             g1arr[mask] = 0
             g2arr[mask] = 0

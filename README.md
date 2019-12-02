@@ -6,7 +6,7 @@ Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read a
 
 ```bash
 git clone https://github.com/chembl/potsim2.git
-pip install potsim2
+pip install potsim2/
 ```
 
 ## Usage: Open two grids and calculate Hodgkin similarity index and PIPSA like distance.
@@ -15,15 +15,15 @@ pip install potsim2
 from potsim2 import PotGrid
 
 # read grids
-grid1 = PotGrid('B__40_01.pkl')
-grid2 = PotGrid('B__40_02.pkl')
+grid1 = PotGrid('B__40_01.pdb', 'B__40_01.pkl')
+grid2 = PotGrid('B__40_02.pdb', 'B__40_02.pkl')
 
 # calculate skin for grid1 
-skin_mask1 = grid1.get_skin_mask('B__40_01.pdb')
+skin_mask1 = grid1.get_skin_mask()
 grid1.apply_mask(skin_mask1)
 
 # calculate skin for grid2 
-skin_mask2 = grid1.get_skin_mask('B__40_02.pdb')
+skin_mask2 = grid2.get_skin_mask()
 grid2.apply_mask(skin_mask2)
 
 # calc Hodgkin similarity index and PIPSA like distance 
