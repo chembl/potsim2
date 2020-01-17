@@ -121,7 +121,7 @@ PYBIND11_MODULE(skinlib, m)
         fill_exclusion_mask
     )pbdoc";
 
-    m.def("fill_exclusion_mask", fill_exclusion_mask, R"pbdoc(
+    m.def("fill_exclusion_mask", fill_exclusion_mask, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         fill exclusion mask for a given radius
         
         .

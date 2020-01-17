@@ -13,11 +13,7 @@ class PotGrid(Grid):
 
         super().__init__(grid, edges, origin, delta,
                          metadata, interpolation_spline_order, file_format)
-
-        # hack, need to fix issue in GridDataFormats #73
-        # https://github.com/MDAnalysis/GridDataFormats/issues/73
-        if pdb_filename:
-            self._load_pdb(pdb_filename)
+        self._load_pdb(pdb_filename)
 
     def _load_pdb(self, pdb_filename):
         # read pdb file and calc protein center
