@@ -23,9 +23,9 @@ void fill_exclusion_mask(py::array_t<bool> pymask,
     double cax, cay, caz, scax, scay, scaz;
     double rexcl, rexcl2;
     double ez, zdist, ey, ydist, ex, xdist, dist2;
-    int x, y, z;
-    int atom_idx, rz, ry, rx;
-    int agcx, agcy, agcz;
+    int32_t x, y, z;
+    int32_t atom_idx, rz, ry, rx;
+    int32_t agcx, agcy, agcz;
 
     double half_deltax = delta(0) / 2.0,
            half_deltay = delta(1) / 2.0,
@@ -34,9 +34,9 @@ void fill_exclusion_mask(py::array_t<bool> pymask,
     double region_ex_max = max_vdw + probe_radius;
 
     // maximum cell distance we want to check from a cell
-    int limx = (region_ex_max + delta(0) * 1.5) / delta(0),
-        limy = (region_ex_max + delta(1) * 1.5) / delta(1),
-        limz = (region_ex_max + delta(2) * 1.5) / delta(2);
+    int32_t limx = (region_ex_max + delta(0) * 1.5) / delta(0),
+            limy = (region_ex_max + delta(1) * 1.5) / delta(1),
+            limz = (region_ex_max + delta(2) * 1.5) / delta(2);
 
     for (atom_idx = 0; atom_idx < atom_coords.shape(0); atom_idx++)
     {
