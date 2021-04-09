@@ -4,15 +4,14 @@
 namespace py = pybind11;
 
 void fill_exclusion_mask(py::array_t<bool> pymask,
-                         py::array_t<double> pydelta,
-                         py::array_t<double> pyoe,
-                         py::array_t<double> pypdb_center,
-                         py::array_t<double> pyatom_coords,
-                         py::array_t<double> pyvdw_radii,
-                         double max_vdw,
-                         double probe_radius)
+                         const py::array_t<double> pydelta,
+                         const py::array_t<double> pyoe,
+                         const py::array_t<double> pypdb_center,
+                         const py::array_t<double> pyatom_coords,
+                         const py::array_t<double> pyvdw_radii,
+                         const double max_vdw,
+                         const double probe_radius)
 {
-
     auto mask = pymask.mutable_unchecked<3>();
     auto delta = pydelta.unchecked<1>();
     auto atom_coords = pyatom_coords.unchecked<2>();
@@ -40,7 +39,6 @@ void fill_exclusion_mask(py::array_t<bool> pymask,
 
     for (atom_idx = 0; atom_idx < atom_coords.shape(0); atom_idx++)
     {
-
         // center pdb structure in euclidean (0, 0, 0)
         cax = atom_coords(atom_idx, 0) - pdb_center(0);
         cay = atom_coords(atom_idx, 1) - pdb_center(1);
@@ -121,7 +119,7 @@ PYBIND11_MODULE(skinlib, m)
         fill_exclusion_mask
     )pbdoc";
 
-    m.def("fill_exclusion_mask", fill_exclusion_mask, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
+    m.def("fill_exclusion_mask", &fill_exclusion_mask, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
         fill exclusion mask for a given radius
         
         .

@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import sys
 import setuptools
+import sys
 
 __version__ = "0.0.2"
 
