@@ -86,11 +86,7 @@ class PotGrid(Grid):
         )
         return mask
 
-    def get_ligand_mask(self, ligand, probe=3):
-        vdw_radii = np.asarray(
-            [get_vdw_radius(element) for element in ligand.getElements()],
-            dtype="float64",
-        )
+    def get_ligand_mask(self, ligand, radius=6.5):
         atom_coords = pr.getCoords(ligand)
         mask = np.zeros(self.grid.shape, dtype=bool)
         fill_exclusion_mask(
@@ -99,9 +95,9 @@ class PotGrid(Grid):
             self.oe,
             self.protein_center,
             atom_coords,
-            vdw_radii,
-            vdw_radii.max(),
-            probe,
+            np.zeros(atom_coords.shape[0]),
+            0,
+            radius,
         )
         return mask
 
