@@ -86,7 +86,7 @@ class PotGrid(Grid):
         )
         return mask
 
-    def get_ligand_mask(self, ligand, radius=6.5):
+    def get_ligand_mask(self, ligand, radius=4.5):
         atom_coords = pr.getCoords(ligand)
         mask = np.zeros(self.grid.shape, dtype=bool)
         fill_exclusion_mask(

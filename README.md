@@ -7,8 +7,6 @@ Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read a
 ```bash
 git clone https://github.com/chembl/potsim2.git
 pip install potsim2/
-# GridDataFormats master branch needed since we submitted patches to make it work with gzipped dx files and fixed a bug
-pip install https://github.com/MDAnalysis/GridDataFormats/archive/master.zip
 ```
 
 ## Usage: Open two grids and calculate Hodgkin similarity index and PIPSA like distance.

@@ -3,7 +3,7 @@ from setuptools.command.build_ext import build_ext
 import setuptools
 import sys
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 
 class get_pybind_include(object):
@@ -115,7 +115,7 @@ setup(
     description="",
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,
-    install_requires=["pybind11>=2.4", "ProDy>=1.10", "GridDataFormats"],
+    install_requires=["pybind11>=2.4", "ProDy>=1.10", "GridDataFormats~=0.6.0"],
     setup_requires=["pybind11>=2.4"],
     cmdclass={"build_ext": BuildExt},
     zip_safe=False,
