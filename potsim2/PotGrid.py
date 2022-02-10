@@ -101,6 +101,22 @@ class PotGrid(Grid):
         )
         return mask
 
+    def get_res_sphere_mask(self, resnum, radius=4.5):
+        res_ca = self.pdb.select(f"ca resnum {resnum}")
+        coords = pr.getCoords(res_ca)
+        mask = np.zeros(self.grid.shape, dtype=bool)
+        fill_exclusion_mask(
+            mask,
+            self.delta,
+            self.oe,
+            self.protein_center,
+            coords,
+            np.zeros(coords.shape[0]),
+            0,
+            radius,
+        )
+        return mask
+
     def apply_mask(self, mask):
         self.grid *= mask
 
