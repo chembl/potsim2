@@ -101,7 +101,7 @@ class PotGrid(Grid):
         )
         return mask
 
-    def get_resnum_sphere_mask(self, resnum, radius=4.5):
+    def get_resnum_sphere_mask(self, resnum, radius=10):
         res_ca = self.pdb.select(f"ca resnum {resnum}")
         coords = pr.getCoords(res_ca)
         mask = np.zeros(self.grid.shape, dtype=bool)
