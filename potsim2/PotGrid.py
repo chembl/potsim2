@@ -57,6 +57,9 @@ class PotGrid(Grid):
     def __add__(self, other):
         return self.__copy_with_new_grid(self.grid + other.grid)
 
+    def __sub__(self, other):
+        return self.__copy_with_new_grid(self.grid - other.grid)
+
     def __mul__(self, other):
         return self.__copy_with_new_grid(self.grid * other.grid)
 
