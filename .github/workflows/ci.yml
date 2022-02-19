@@ -1,0 +1,29 @@
+name: CI
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+    tags: '*'
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.10' ]
+    name: Python ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install potsim2
+        shell: bash -l {0}
+        run: pip install pybind11 && pip install -e .
+      - name: Run tests
+        shell: bash -l {0}
+        run: python -m unittest
