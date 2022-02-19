@@ -22,8 +22,8 @@ class TestPotGrid(unittest.TestCase):
         grid2.apply_mask(skin_mask2)
         hsi, dis = grid1.score(grid2)
 
-        self.assertEqual(hsi, 0.9081104462828233)
-        self.assertEqual(dis, 0.4286946552435117)
+        self.assertAlmostEqual(hsi, 0.9081104462828233, 13)
+        self.assertAlmostEqual(dis, 0.4286946552435117, 13)
 
     def test_residue_sphere_sim(self):
 
@@ -45,8 +45,8 @@ class TestPotGrid(unittest.TestCase):
 
         hsi, dis = grid1.score(grid2)
 
-        self.assertEqual(hsi, 0.9895875459929891)
-        self.assertEqual(dis, 0.14430837818374131)
+        self.assertAlmostEqual(hsi, 0.9895875459929891, 13)
+        self.assertAlmostEqual(dis, 0.14430837818374131, 13)
 
 
 if __name__ == "__main__":
