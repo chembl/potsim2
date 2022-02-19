@@ -38,13 +38,13 @@ class PotGrid(Grid):
         self.protein_center = pr.calcCenter(self.protein)
         self.oe = self.origin - self.protein_center
 
-    def __copy_with_new_grid(self, new_grid):
+    def __copy_with_new_grid(self, grid):
         """
         Creates a copy of the PotGrid object but with a new grid
         """
         new_grid = PotGrid(
             pdb_filename=self.pdb_filename,
-            grid=new_grid,
+            grid=grid,
             edges=self.edges,
             origin=self.origin,
             delta=self.delta,
