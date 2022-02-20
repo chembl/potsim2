@@ -1,7 +1,8 @@
-from MDAnalysis import Universe
-from .skinlib import fill_exclusion_mask
+from .potsimlib import fill_exclusion_mask
 from .vdw import get_vdw_radius
 from gridData import Grid
+from gridData.core import ndmeshgrid
+from MDAnalysis import Universe
 import numpy as np
 
 
@@ -36,17 +37,16 @@ class PotGrid(Grid):
         self.protein_center = self.protein.atoms.positions.mean(-2)
         self.oe = self.origin - self.protein_center
 
-    def __copy_with_new_grid(self, grid):
+    def __copy_with_new_grid(self, grid, edges=None):
         """
         Creates a copy of the PotGrid object but with a new grid
         """
-        new_grid = PotGrid(
+        new_grid = self.__class__(
             pdb_filename=self.pdb_filename,
             grid=grid,
-            edges=self.edges,
+            edges=edges,
             origin=self.origin,
             delta=self.delta,
-            metadata=None,
             interpolation_spline_order=self.interpolation_spline_order,
             file_format=None,
         )
@@ -177,3 +177,14 @@ class PotGrid(Grid):
         # mkdismx (PIPSA) like distance score
         pipsa_diff_index = np.sqrt(2 - 2 * hodgkin_si)
         return hodgkin_si, pipsa_diff_index
+
+    def resample(self, edges):
+        try:
+            edges = edges.edges  # can also supply another Grid
+        except AttributeError:
+            pass
+        midpoints = self._midpoints(edges)
+        coordinates = ndmeshgrid(*midpoints)
+        # feed a meshgrid to generate all points
+        newgrid = self.interpolated(*coordinates)
+        return self.__copy_with_new_grid(grid=newgrid, edges=edges)
