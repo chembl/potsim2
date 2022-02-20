@@ -77,7 +77,7 @@ class PotGrid(Grid):
             [get_vdw_radius(element) for element in self.universe.atoms.elements],
             dtype="float64",
         )
-        atom_coords = pr.getCoords(self.protein)
+        atom_coords = self.universe.atoms.positions
         # center pdb structure in euclidean (0, 0, 0)
         atom_coords -= self.protein_center
 
