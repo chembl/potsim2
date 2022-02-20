@@ -2,7 +2,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 ext_modules = [
@@ -25,15 +25,13 @@ setup(
     description="",
     long_description=open("README.md", encoding="utf-8").read(),
     ext_modules=ext_modules,
-    install_requires=["pybind11>=2.4", "ProDy>=1.10", "GridDataFormats~=0.6.0"],
+    install_requires=["pybind11>=2.4", "MDAnalysis~=2.0.0", "GridDataFormats~=0.6.0"],
     setup_requires=["pybind11>=2.4"],
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

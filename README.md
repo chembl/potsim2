@@ -1,10 +1,13 @@
 # PotSim2: Simple package to segment and compare protein potential grids
 
-Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [ProdDy](https://github.com/prody/ProDy) to make pdb atom selections.
+Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [MDAnalysis](https://www.mdanalysis.org/) to make pdb atom selections.
 
 ## Installation
 
+It requires [pybind11](https://github.com/pybind/pybind11) to compile the C++ extension.
+
 ```bash
+pip install pybind11
 git clone https://github.com/chembl/potsim2.git
 pip install potsim2/
 ```
