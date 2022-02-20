@@ -48,6 +48,16 @@ class TestPotGrid(unittest.TestCase):
         self.assertAlmostEqual(hsi, 0.9895875459929891, 13)
         self.assertAlmostEqual(dis, 0.14430837818374131, 13)
 
+    def test_resample(self):
+
+        pdb1 = os.path.join(TESTS_DIR, "data/A__02_01.pdb")
+        grid1 = os.path.join(TESTS_DIR, "data/A__02_01.pkl")
+
+        grid1 = PotGrid(pdb1, grid1)
+        grid1 = grid1.resample_factor(0.5)
+
+        self.assertEqual(grid1.grid.shape, (18, 18, 18))
+
 
 if __name__ == "__main__":
     unittest.main()
