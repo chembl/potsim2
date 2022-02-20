@@ -74,7 +74,7 @@ class PotGrid(Grid):
         Get a PIPSA like skin mask
         """
         vdw_radii = np.asarray(
-            [get_vdw_radius(element) for element in self.protein.getElements()],
+            [get_vdw_radius(element) for element in self.universe.atoms.elements],
             dtype="float64",
         )
         atom_coords = pr.getCoords(self.protein)
