@@ -1,10 +1,8 @@
+from MDAnalysis import Universe
 from .skinlib import fill_exclusion_mask
 from .vdw import get_vdw_radius
 from gridData import Grid
 import numpy as np
-import prody as pr
-
-pr.confProDy(verbosity="none")
 
 
 class PotGrid(Grid):
@@ -33,9 +31,9 @@ class PotGrid(Grid):
 
     def _load_pdb(self, pdb_filename):
         # read pdb file and calc protein center
-        self.pdb = pr.parsePDB(pdb_filename)
-        self.protein = self.pdb.select("protein")
-        self.protein_center = pr.calcCenter(self.protein)
+        self.universe = Universe(pdb_filename)
+        self.protein = self.universe.select_atoms("protein")
+        self.protein_center = self.protein.atoms.positions.mean(-2)
         self.oe = self.origin - self.protein_center
 
     def __copy_with_new_grid(self, grid):
@@ -118,11 +116,11 @@ class PotGrid(Grid):
         )
         return self.__copy_with_new_grid(mask)
 
-    def get_atom_list_mask(self, atom_list, radius=4.5):
+    def get_atom_list_mask(self, universe, radius=4.5):
         """
-        Get a new grid containing an sphere on each atom in a ProDy atom selection
+        Get a new grid containing an sphere on each atom of an MDAnalysis universe atom selection
         """
-        atom_coords = pr.getCoords(atom_list)
+        atom_coords = universe.atoms.positions
         atom_coords -= self.protein_center
 
         mask = np.zeros(self.grid.shape, dtype=bool)
@@ -137,12 +135,12 @@ class PotGrid(Grid):
         )
         return self.__copy_with_new_grid(mask)
 
-    def get_residue_sphere_mask(self, resnum, radius=10):
+    def get_residue_sphere_mask(self, resid, radius=10):
         """
         Get a new grid containing an sphere on the selected residue alpha carbon
         """
-        res_ca = self.pdb.select(f"ca resnum {resnum}")
-        res_coords = pr.getCoords(res_ca)
+        res_ca = self.universe.select_atoms(f"resid {resid}").select_atoms("name CA")
+        res_coords = res_ca.atoms.positions
         res_coords -= self.protein_center
 
         mask = np.zeros(self.grid.shape, dtype=bool)

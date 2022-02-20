@@ -1,6 +1,6 @@
 # PotSim2: Simple package to segment and compare protein potential grids
 
-Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [ProdDy](https://github.com/prody/ProDy) to make pdb atom selections.
+Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [MDAnalysis](https://www.mdanalysis.org/) to make pdb atom selections.
 
 ## Installation
 
