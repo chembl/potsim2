@@ -83,7 +83,7 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
                     if (mask(x - 1, j - 1, z - 1) == true)
                         continue;
 
-                    x = x * delta(0) + oe(0);
+                    x = k * delta(0) + oe(0);
                     x_dist = x - atom_coords(atom_idx, 0);
                     dist2 = x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
                     if (dist2 > exclusion_dist2)
