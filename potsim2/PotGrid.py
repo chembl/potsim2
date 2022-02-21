@@ -7,13 +7,13 @@ import numpy as np
 
 
 def read_binary_uhbd_grid(filename):
-    delta = np.zeros(3, dtype=np.float32)
+    delta = np.ones(3, dtype=np.float32)
     with open(filename, "rb") as file:
         file.seek(104)
         shape = np.frombuffer(file.read(12), dtype=np.int32)
         spacing = np.frombuffer(file.read(4), dtype=np.float32)
         origin = np.frombuffer(file.read(12), dtype=np.float32)
-        delta[0] = delta[1] = delta[2] = spacing
+        delta *= spacing
     grid = np.fromfile(
         filename, dtype=np.float32, count=np.prod(shape), offset=192
     ).reshape(shape, order="F")
