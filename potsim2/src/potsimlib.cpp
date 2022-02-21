@@ -50,9 +50,9 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
 
         for (k_region = -k_limit; k_region <= k_limit; k_region++)
         {
-            z = k_region + atom_k;
+            k = k_region + atom_k;
             // check if the cell falls out of the grid
-            if (z <= 0 or z > mask.shape(2))
+            if (k <= 0 or k > mask.shape(2))
                 continue;
 
             // discrete grid coords back to euclidean space to check dists
@@ -75,9 +75,9 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
 
                 for (i_region = -i_limit; i_region <= i_limit; i_region++)
                 {
-                    x = i_region + atom_i;
+                    i = i_region + atom_i;
                     // check if the cell falls out of the grid
-                    if (x <= 0 or x > mask.shape(0))
+                    if (i <= 0 or i > mask.shape(0))
                         continue;
 
                     if (mask(i - 1, j - 1, k - 1) == true)
