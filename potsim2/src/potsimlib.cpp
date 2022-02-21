@@ -56,7 +56,7 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
                 continue;
 
             // discrete grid coords back to euclidean space to check dists
-            z = z * delta(2) + oe(2);
+            z = k * delta(2) + oe(2);
             z_dist = z - atom_coords(atom_idx, 2);
             if (z_dist > exclusion_dist)
                 continue;
@@ -83,7 +83,7 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
                     if (mask(i - 1, j - 1, k - 1) == true)
                         continue;
 
-                    x = k * delta(0) + oe(0);
+                    x = i * delta(0) + oe(0);
                     x_dist = x - atom_coords(atom_idx, 0);
                     dist2 = x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
                     if (dist2 > exclusion_dist2)
