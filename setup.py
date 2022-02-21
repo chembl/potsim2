@@ -7,8 +7,8 @@ __version__ = "0.2.1"
 
 ext_modules = [
     Pybind11Extension(
-        "potsim2.skinlib",
-        ["potsim2/src/skin.cpp"],
+        "potsim2.potsimlib",
+        ["potsim2/src/potsimlib.cpp"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),

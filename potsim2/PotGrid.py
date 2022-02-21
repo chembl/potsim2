@@ -1,9 +1,23 @@
-from .skinlib import fill_exclusion_mask
+from .potsimlib import fill_exclusion_mask
 from .vdw import get_vdw_radius
 from gridData import Grid
 from gridData.core import ndmeshgrid
 from MDAnalysis import Universe
 import numpy as np
+
+
+def read_binary_uhbd_grid(filename):
+    delta = np.ones(3, dtype=np.float32)
+    with open(filename, "rb") as file:
+        file.seek(104)
+        shape = np.frombuffer(file.read(12), dtype=np.int32)
+        spacing = np.frombuffer(file.read(4), dtype=np.float32)
+        origin = np.frombuffer(file.read(12), dtype=np.float32)
+        delta *= spacing
+    grid = np.fromfile(
+        filename, dtype=np.float32, count=np.prod(shape), offset=192
+    ).reshape(shape, order="F")
+    return grid, origin, delta
 
 
 class PotGrid(Grid):
@@ -18,15 +32,25 @@ class PotGrid(Grid):
         interpolation_spline_order=3,
         file_format=None,
     ):
-        super().__init__(
-            grid,
-            edges,
-            origin,
-            delta,
-            metadata,
-            interpolation_spline_order,
-            file_format,
-        )
+        if grid is not None:
+            if isinstance(grid, str):
+                filename = grid
+                g_format = filename.split(".")[-1]
+                if g_format.upper() == "UHBD":
+                    grid, origin, delta = read_binary_uhbd_grid(filename)
+            super().__init__(
+                grid=grid, origin=origin, delta=delta,
+            )
+        else:
+            super().__init__(
+                grid,
+                edges,
+                origin,
+                delta,
+                metadata,
+                interpolation_spline_order,
+                file_format,
+            )
         self.pdb_filename = pdb_filename
         self._load_pdb(pdb_filename)
 
@@ -44,10 +68,9 @@ class PotGrid(Grid):
         new_grid = self.__class__(
             pdb_filename=self.pdb_filename,
             grid=grid,
-            edges=self.edges if not edges else edges,
+            edges=edges,
             origin=self.origin,
             delta=self.delta,
-            metadata=None,
             interpolation_spline_order=self.interpolation_spline_order,
             file_format=None,
         )
