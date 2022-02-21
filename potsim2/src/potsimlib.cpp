@@ -80,7 +80,7 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
                     if (x <= 0 or x > mask.shape(0))
                         continue;
 
-                    if (mask(x - 1, j - 1, z - 1) == true)
+                    if (mask(i - 1, j - 1, k - 1) == true)
                         continue;
 
                     x = k * delta(0) + oe(0);
@@ -88,7 +88,7 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
                     dist2 = x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
                     if (dist2 > exclusion_dist2)
                         continue;
-                    mask(x - 1, j - 1, z - 1) = true;
+                    mask(i - 1, j - 1, k - 1) = true;
                 }
             }
         }
