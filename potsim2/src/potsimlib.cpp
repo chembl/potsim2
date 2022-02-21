@@ -20,75 +20,75 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
     auto vdw_radii = py_vdw_radii.unchecked<1>();
     auto oe = py_oe.unchecked<1>();
 
-    double exclusion_distance, exclusion_distance2;
-    double euclidean_z, z_distance, euclidean_y, y_distance, euclidean_x, x_distance, distance2;
-    int32_t current_x, current_y, current_z;
-    int32_t atom_idx, z_region, y_region, x_region;
-    int32_t grid_x_coord, grid_y_coord, grid_z_coord;
+    double exclusion_dist, exclusion_dist2;
+    double z, z_dist, y, y_dist, x, x_dist, dist2;
+    int32_t i, j, k;
+    int32_t atom_idx, k_region, j_region, i_region;
+    int32_t atom_i, atom_j, atom_k;
 
     double half_delta_x = delta(0) / 2.0,
            half_delta_y = delta(1) / 2.0,
            half_delta_z = delta(2) / 2.0;
 
-    double max_eclusion_dist = max_vdw_radius + probe_radius;
+    double max_exclusion_dist = max_vdw_radius + probe_radius;
 
-    // maximum distance (in cells) we want to check from a cell
-    int32_t x_limit = (max_eclusion_dist + delta(0) * 1.5) / delta(0),
-            y_limit = (max_eclusion_dist + delta(1) * 1.5) / delta(1),
-            z_limit = (max_eclusion_dist + delta(2) * 1.5) / delta(2);
+    // maximum dist (in cells) we want to check from a cell
+    int32_t i_limit = (max_exclusion_dist + delta(0) * 1.5) / delta(0),
+            j_limit = (max_exclusion_dist + delta(1) * 1.5) / delta(1),
+            k_limit = (max_exclusion_dist + delta(2) * 1.5) / delta(2);
 
     for (atom_idx = 0; atom_idx < atom_coords.shape(0); atom_idx++)
     {
-        // exclusion distance. van der waals radius + probe_radius (probe or probe + skin)
-        exclusion_distance = vdw_radii(atom_idx) + probe_radius;
-        exclusion_distance2 = exclusion_distance * exclusion_distance;
+        // exclusion dist. van der waals radius + probe_radius (probe or probe + skin)
+        exclusion_dist = vdw_radii(atom_idx) + probe_radius;
+        exclusion_dist2 = exclusion_dist * exclusion_dist;
 
         // get grid cell coords from the atom's euclidean coords
-        grid_x_coord = (atom_coords(atom_idx, 0) + half_delta_x - oe(0)) / delta(0);
-        grid_y_coord = (atom_coords(atom_idx, 1) + half_delta_y - oe(1)) / delta(1);
-        grid_z_coord = (atom_coords(atom_idx, 2) + half_delta_z - oe(2)) / delta(2);
+        atom_i = (atom_coords(atom_idx, 0) + half_delta_x - oe(0)) / delta(0);
+        atom_j = (atom_coords(atom_idx, 1) + half_delta_y - oe(1)) / delta(1);
+        atom_k = (atom_coords(atom_idx, 2) + half_delta_z - oe(2)) / delta(2);
 
-        for (z_region = -z_limit; z_region <= z_limit; z_region++)
+        for (k_region = -k_limit; k_region <= k_limit; k_region++)
         {
-            current_z = z_region + grid_z_coord;
+            z = k_region + atom_k;
             // check if the cell falls out of the grid
-            if (current_z <= 0 or current_z > mask.shape(2))
+            if (z <= 0 or z > mask.shape(2))
                 continue;
 
-            // discrete grid coords back to euclidean space to check distances
-            euclidean_z = current_z * delta(2) + oe(2);
-            z_distance = euclidean_z - atom_coords(atom_idx, 2);
-            if (z_distance > exclusion_distance)
+            // discrete grid coords back to euclidean space to check dists
+            z = z * delta(2) + oe(2);
+            z_dist = z - atom_coords(atom_idx, 2);
+            if (z_dist > exclusion_dist)
                 continue;
 
-            for (y_region = -y_limit; y_region <= y_limit; y_region++)
+            for (j_region = -j_limit; j_region <= j_limit; j_region++)
             {
-                current_y = y_region + grid_y_coord;
+                j = j_region + atom_j;
                 // check if the cell falls out of the grid
-                if (current_y <= 0 or current_y > mask.shape(1))
+                if (j <= 0 or j > mask.shape(1))
                     continue;
 
-                euclidean_y = current_y * delta(1) + oe(1);
-                y_distance = euclidean_y - atom_coords(atom_idx, 1);
-                if (y_distance > exclusion_distance)
+                y = j * delta(1) + oe(1);
+                y_dist = y - atom_coords(atom_idx, 1);
+                if (y_dist > exclusion_dist)
                     continue;
 
-                for (x_region = -x_limit; x_region <= x_limit; x_region++)
+                for (i_region = -i_limit; i_region <= i_limit; i_region++)
                 {
-                    current_x = x_region + grid_x_coord;
+                    x = i_region + atom_i;
                     // check if the cell falls out of the grid
-                    if (current_x <= 0 or current_x > mask.shape(0))
+                    if (x <= 0 or x > mask.shape(0))
                         continue;
 
-                    if (mask(current_x - 1, current_y - 1, current_z - 1) == true)
+                    if (mask(x - 1, j - 1, z - 1) == true)
                         continue;
 
-                    euclidean_x = current_x * delta(0) + oe(0);
-                    x_distance = euclidean_x - atom_coords(atom_idx, 0);
-                    distance2 = x_distance * x_distance + y_distance * y_distance + z_distance * z_distance;
-                    if (distance2 > exclusion_distance2)
+                    x = x * delta(0) + oe(0);
+                    x_dist = x - atom_coords(atom_idx, 0);
+                    dist2 = x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
+                    if (dist2 > exclusion_dist2)
                         continue;
-                    mask(current_x - 1, current_y - 1, current_z - 1) = true;
+                    mask(x - 1, j - 1, z - 1) = true;
                 }
             }
         }
@@ -102,39 +102,22 @@ void read_uhbd_header(py::array_t<int> py_shape,
 {
     auto shape = py_shape.mutable_unchecked<1>();
     auto *shape_ptr = (int *)shape.data(0);
-
     auto origin = py_origin.mutable_unchecked<1>();
     auto *origin_ptr = (float *)origin.data(0);
-
     auto spacing = py_spacing.mutable_unchecked<1>();
-
-    float scale;
-    float spacing2;
-    int grdflag;
-    int one;
-
-    float dummy1;
-    int idummy1;
-    int idummy2;
-    int idummy3;
+    float fspacing;
 
     std::ifstream file;
     file.open(filename, std::ifstream::in | std::ifstream::binary);
     if (file)
     {
         // 4 + title (72)
-        file.seekg(76, file.beg);
-        file.read((char *)&scale, sizeof(float));
-        file.read((char *)&dummy1, sizeof(float));
-        file.read((char *)&grdflag, sizeof(int));
-        file.read((char *)&idummy1, sizeof(int));
-        file.read((char *)&idummy2, sizeof(int));
-        file.read((char *)&one, sizeof(int));
-        file.read((char *)&idummy3, sizeof(int));
+        // + unused 28 bytes (7 int/float)
+        file.seekg(104, file.beg);
         file.read((char *)&shape_ptr[0], sizeof(int));
         file.read((char *)&shape_ptr[1], sizeof(int));
         file.read((char *)&shape_ptr[2], sizeof(int));
-        file.read((char *)&spacing2, sizeof(float));
+        file.read((char *)&fspacing, sizeof(float));
         file.read((char *)&origin_ptr[0], sizeof(float));
         file.read((char *)&origin_ptr[1], sizeof(float));
         file.read((char *)&origin_ptr[2], sizeof(float));
@@ -145,7 +128,7 @@ void read_uhbd_header(py::array_t<int> py_shape,
         std::cout << "ERROR: Cannot open the UHBD file!" << std::endl;
         exit(0);
     }
-    spacing(0) = spacing(1) = spacing(2) = spacing2;
+    spacing(0) = spacing(1) = spacing(2) = fspacing;
 }
 
 void read_uhbd_grid(py::array_t<float> py_grid,
@@ -157,21 +140,13 @@ void read_uhbd_grid(py::array_t<float> py_grid,
 
     std::ifstream file;
     file.open(filename, std::ifstream::in | std::ifstream::binary);
-    // skip the header
-    file.seekg(164, file.beg);
     if (file)
     {
-        int kx, im, jm, ufo1, ufo2, ufo3, ufo4;
+        // skip the header (164) + 28 unused bytes (7 floats)
+        file.seekg(192, file.beg);
         float data_buffer;
         for (int k = 0; k < shape(2); k++)
         {
-            file.read((char *)&ufo1, sizeof(float));
-            file.read((char *)&ufo2, sizeof(float));
-            file.read((char *)&kx, sizeof(float));
-            file.read((char *)&im, sizeof(float));
-            file.read((char *)&jm, sizeof(float));
-            file.read((char *)&ufo3, sizeof(float));
-            file.read((char *)&ufo4, sizeof(float));
             for (int j = 0; j < shape(1); j++)
             {
                 for (int i = 0; i < shape(0); i++)
