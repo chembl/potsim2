@@ -1,9 +1,23 @@
-from .potsimlib import fill_exclusion_mask, read_uhbd_header, read_uhbd_grid
+from .potsimlib import fill_exclusion_mask
 from .vdw import get_vdw_radius
 from gridData import Grid
 from gridData.core import ndmeshgrid
 from MDAnalysis import Universe
 import numpy as np
+
+
+def read_binary_uhbd_grid(filename):
+    delta = np.zeros(3, dtype=np.float32)
+    with open(filename, "rb") as file:
+        file.seek(104)
+        shape = np.frombuffer(file.read(12), dtype=np.int32)
+        spacing = np.frombuffer(file.read(4), dtype=np.float32)
+        origin = np.frombuffer(file.read(12), dtype=np.float32)
+        delta[0] = delta[1] = delta[2] = spacing
+    grid = np.fromfile(
+        filename, dtype=np.float32, count=np.prod(shape), offset=192
+    ).reshape(shape, order="F")
+    return grid, origin, delta
 
 
 class PotGrid(Grid):
@@ -23,14 +37,7 @@ class PotGrid(Grid):
                 filename = grid
                 g_format = filename.split(".")[-1]
                 if g_format.upper() == "UHBD":
-                    shape = np.zeros(3, dtype=np.int32)
-                    origin = np.zeros(3, dtype=np.float32)
-                    delta = np.zeros(3, dtype=np.float32)
-                    # read the header
-                    read_uhbd_header(shape, origin, delta, filename)
-                    # read the grid
-                    grid = np.zeros(shape, dtype=np.float32)
-                    read_uhbd_grid(grid, shape, filename)
+                    grid, origin, delta = read_binary_uhbd_grid(filename)
             super().__init__(
                 grid=grid, origin=origin, delta=delta,
             )

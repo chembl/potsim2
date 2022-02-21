@@ -95,76 +95,6 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
     }
 }
 
-void read_uhbd_header(py::array_t<int> py_shape,
-                      py::array_t<float> py_origin,
-                      py::array_t<float> py_spacing,
-                      const std::string &filename)
-{
-    auto shape = py_shape.mutable_unchecked<1>();
-    auto *shape_ptr = (int *)shape.data(0);
-    auto origin = py_origin.mutable_unchecked<1>();
-    auto *origin_ptr = (float *)origin.data(0);
-    auto spacing = py_spacing.mutable_unchecked<1>();
-    float fspacing;
-
-    std::ifstream file;
-    file.open(filename, std::ifstream::in | std::ifstream::binary);
-    if (file)
-    {
-        // 4 + title (72)
-        // + unused 28 bytes (7 int/float)
-        file.seekg(104, file.beg);
-        file.read((char *)&shape_ptr[0], sizeof(int));
-        file.read((char *)&shape_ptr[1], sizeof(int));
-        file.read((char *)&shape_ptr[2], sizeof(int));
-        file.read((char *)&fspacing, sizeof(float));
-        file.read((char *)&origin_ptr[0], sizeof(float));
-        file.read((char *)&origin_ptr[1], sizeof(float));
-        file.read((char *)&origin_ptr[2], sizeof(float));
-        file.close();
-    }
-    else
-    {
-        std::cout << "ERROR: Cannot open the UHBD file!" << std::endl;
-        exit(0);
-    }
-    spacing(0) = spacing(1) = spacing(2) = fspacing;
-}
-
-void read_uhbd_grid(py::array_t<float> py_grid,
-                    const py::array_t<int> py_shape, 
-                    const std::string &filename)
-{
-    auto grid = py_grid.mutable_unchecked<3>();
-    auto shape = py_shape.unchecked<1>();
-
-    std::ifstream file;
-    file.open(filename, std::ifstream::in | std::ifstream::binary);
-    if (file)
-    {
-        // skip the header (164) + 28 unused bytes (7 floats)
-        file.seekg(192, file.beg);
-        float data_buffer;
-        for (int k = 0; k < shape(2); k++)
-        {
-            for (int j = 0; j < shape(1); j++)
-            {
-                for (int i = 0; i < shape(0); i++)
-                {
-                    file.read((char *)&data_buffer, sizeof(float));
-                    grid(i, j, k) = data_buffer;
-                }
-            }
-        }
-        file.close();
-    }
-    else
-    {
-        std::cout << "ERROR: Cannot open the UHBD file" << std::endl;
-        exit(0);
-    }
-}
-
 PYBIND11_MODULE(potsimlib, m)
 {
     m.doc() = R"pbdoc(
@@ -183,17 +113,5 @@ PYBIND11_MODULE(potsimlib, m)
         Fill exclusion mask
         
         Fill an spherical mask for given set of coordinates and radius.
-    )pbdoc");
-
-    m.def("read_uhbd_header", &read_uhbd_header, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Read binary UHBD file header
-
-        Read the header of a binary UHBD grid file.
-    )pbdoc");
-
-    m.def("read_uhbd_grid", &read_uhbd_grid, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Read binary UHBD file grid
-
-        Read the grid of a binary UHBD grid file.
     )pbdoc");
 }
