@@ -1,4 +1,4 @@
-from .skinlib import fill_exclusion_mask
+from .potsimlib import fill_exclusion_mask, read_uhbd_header, read_uhbd_grid
 from .vdw import get_vdw_radius
 from gridData import Grid
 from gridData.core import ndmeshgrid
@@ -18,15 +18,32 @@ class PotGrid(Grid):
         interpolation_spline_order=3,
         file_format=None,
     ):
-        super().__init__(
-            grid,
-            edges,
-            origin,
-            delta,
-            metadata,
-            interpolation_spline_order,
-            file_format,
-        )
+        if grid is not None:
+            if isinstance(grid, str):
+                filename = grid
+                g_format = filename.split(".")[-1]
+                if g_format.upper() == "UHBD":
+                    shape = np.zeros(3, dtype=np.int32)
+                    origin = np.zeros(3, dtype=np.float32)
+                    delta = np.zeros(3, dtype=np.float32)
+                    # read the header
+                    read_uhbd_header(shape, origin, delta, filename)
+                    # read the grid
+                    grid = np.zeros(shape, dtype=np.float32)
+                    read_uhbd_grid(grid, shape, filename)
+            super().__init__(
+                grid=grid, origin=origin, delta=delta,
+            )
+        else:
+            super().__init__(
+                grid,
+                edges,
+                origin,
+                delta,
+                metadata,
+                interpolation_spline_order,
+                file_format,
+            )
         self.pdb_filename = pdb_filename
         self._load_pdb(pdb_filename)
 
@@ -44,10 +61,9 @@ class PotGrid(Grid):
         new_grid = self.__class__(
             pdb_filename=self.pdb_filename,
             grid=grid,
-            edges=self.edges if not edges else edges,
+            edges=edges,
             origin=self.origin,
             delta=self.delta,
-            metadata=None,
             interpolation_spline_order=self.interpolation_spline_order,
             file_format=None,
         )
