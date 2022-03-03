@@ -1,3 +1,4 @@
+# from numpy.testing import assert_equal
 from potsim2 import PotGrid
 import unittest
 import os
@@ -47,6 +48,21 @@ class TestPotGrid(unittest.TestCase):
 
         self.assertAlmostEqual(hsi, 0.9895875459929891, 13)
         self.assertAlmostEqual(dis, 0.14430837818374131, 13)
+
+    # def test_uhbd_parser(self):
+
+    #     pdb1 = os.path.join(TESTS_DIR, "data/A__02_01.pdb")
+    #     grid1 = os.path.join(TESTS_DIR, "data/A__02_01.dx.gz")
+    #     grid2 = os.path.join(TESTS_DIR, "data/A__02_01.grd")
+
+    #     grid1 = PotGrid(pdb1, grid1)
+    #     grid2 = PotGrid(pdb1, grid2)
+
+    #     assert_equal(grid1.grid.shape, grid2.grid.shape)
+    #     assert_equal(grid1.origin, grid2.origin)
+    #     assert_equal(grid1.delta, grid2.delta)
+
+    #     assert_equal(grid1.grid, grid2.grid)
 
     def test_resample(self):
 
