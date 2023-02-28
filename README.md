@@ -1,10 +1,10 @@
 # PotSim2: Simple package to segment and compare protein potential grids
 
-Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [MDAnalysis](https://www.mdanalysis.org/) to make pdb atom selections.
+Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read the grids and [MDAnalysis](https://www.mdanalysis.org/) to make pdb atom selections
 
 ## Installation
 
-It requires [pybind11](https://github.com/pybind/pybind11) to compile the C++ extension.
+It requires [pybind11](https://github.com/pybind/pybind11) to compile the C++ extension
 
 ```bash
 pip install pybind11
@@ -14,7 +14,7 @@ pip install potsim2/
 
 ## Usage: Open two grids and calculate [PIPSA](https://pipsa.h-its.org/pipsa/) like scores
 
-The protein electrostatic potential grids can generated with [APBS](https://github.com/Electrostatics/apbs).
+The protein electrostatic potential grids can generated with [APBS](https://github.com/Electrostatics/apbs)
 
 ```python
 from potsim2 import PotGrid

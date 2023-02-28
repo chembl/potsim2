@@ -2,7 +2,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 ext_modules = [
@@ -23,7 +23,8 @@ setup(
     license="MIT",
     packages=["potsim2"],
     description="",
-    # long_description=open("README.md", encoding="utf-8").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     install_requires=["MDAnalysis>=2.3.0", "GridDataFormats>=1.0.1"],
     cmdclass={"build_ext": build_ext},
