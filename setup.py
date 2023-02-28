@@ -2,7 +2,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 
 ext_modules = [
@@ -32,8 +32,10 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering :: Chemistry",
     ],
 )

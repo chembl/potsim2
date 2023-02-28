@@ -4,12 +4,8 @@ Using [gridDataFormats](https://github.com/MDAnalysis/GridDataFormats) to read t
 
 ## Installation
 
-It requires [pybind11](https://github.com/pybind/pybind11) to compile the C++ extension
-
 ```bash
-pip install pybind11
-git clone https://github.com/chembl/potsim2.git
-pip install potsim2/
+pip install potsim2
 ```
 
 ## Usage: Open two grids and calculate [PIPSA](https://pipsa.h-its.org/pipsa/) like scores
