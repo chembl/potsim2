@@ -6,19 +6,19 @@
 
 namespace py = pybind11;
 
-void fill_exclusion_mask(py::array_t<bool> py_mask,
-                         const py::array_t<double> py_delta,
-                         const py::array_t<double> py_oe,
-                         const py::array_t<double> py_atom_coords,
-                         const py::array_t<double> py_vdw_radii,
-                         const double max_vdw_radius,
-                         const double probe_radius)
+void fill_exclusion_mask(py::array_t<bool> &py_mask,
+                         const py::array_t<double> &py_delta,
+                         const py::array_t<double> &py_oe,
+                         const py::array_t<double> &py_atom_coords,
+                         const py::array_t<double> &py_vdw_radii,
+                         const double &max_vdw_radius,
+                         const double &probe_radius)
 {
     auto mask = py_mask.mutable_unchecked<3>();
-    auto delta = py_delta.unchecked<1>();
-    auto atom_coords = py_atom_coords.unchecked<2>();
-    auto vdw_radii = py_vdw_radii.unchecked<1>();
-    auto oe = py_oe.unchecked<1>();
+    const auto delta = py_delta.unchecked<1>();
+    const auto atom_coords = py_atom_coords.unchecked<2>();
+    const auto vdw_radii = py_vdw_radii.unchecked<1>();
+    const auto oe = py_oe.unchecked<1>();
 
     double exclusion_dist, exclusion_dist2;
     double z, z_dist, y, y_dist, x, x_dist, dist2;
@@ -26,16 +26,16 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
     int32_t atom_idx, k_region, j_region, i_region;
     int32_t atom_i, atom_j, atom_k;
 
-    double half_delta_x = delta(0) / 2.0,
-           half_delta_y = delta(1) / 2.0,
-           half_delta_z = delta(2) / 2.0;
+    const double half_delta_x = delta(0) / 2.0,
+                 half_delta_y = delta(1) / 2.0,
+                 half_delta_z = delta(2) / 2.0;
 
-    double max_exclusion_dist = max_vdw_radius + probe_radius;
+    const double max_exclusion_dist = max_vdw_radius + probe_radius;
 
     // maximum dist (in cells) we want to check from a cell
-    int32_t i_limit = (max_exclusion_dist + delta(0) * 1.5) / delta(0),
-            j_limit = (max_exclusion_dist + delta(1) * 1.5) / delta(1),
-            k_limit = (max_exclusion_dist + delta(2) * 1.5) / delta(2);
+    const int32_t i_limit = (max_exclusion_dist + delta(0) * 1.5) / delta(0),
+                  j_limit = (max_exclusion_dist + delta(1) * 1.5) / delta(1),
+                  k_limit = (max_exclusion_dist + delta(2) * 1.5) / delta(2);
 
     for (atom_idx = 0; atom_idx < atom_coords.shape(0); atom_idx++)
     {
@@ -94,7 +94,6 @@ void fill_exclusion_mask(py::array_t<bool> py_mask,
         }
     }
 }
-
 
 PYBIND11_MODULE(potsimlib, m)
 {

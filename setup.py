@@ -2,7 +2,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 
 ext_modules = [
@@ -26,16 +26,17 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     ext_modules=ext_modules,
-    install_requires=["MDAnalysis>=2.3.0", "GridDataFormats>=1.0.1"],
+    install_requires=["MDAnalysis>=2.3.0", "GridDataFormats==1.0.1"],
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Scientific/Engineering :: Chemistry",
     ],
 )
