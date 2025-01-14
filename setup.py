@@ -26,7 +26,7 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     ext_modules=ext_modules,
-    install_requires=["MDAnalysis>=2.3.0", "GridDataFormats==1.0.1"],
+    install_requires=["MDAnalysis>=2.3.0", "GridDataFormats>=1.0.1"],
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
     classifiers=[
