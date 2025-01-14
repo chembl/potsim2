@@ -1,5 +1,8 @@
-# values extracted from RDKit/The Blue Obelisk
-vdw_dict = {
+from typing import Dict
+
+# Values extracted from RDKit/The Blue Obelisk
+# Units: Angstroms (Å)
+VDW_RADII: Dict[str, float] = {
     "H": 1.2,
     "He": 1.4,
     "Li": 1.82,
@@ -123,9 +126,21 @@ vdw_dict = {
 }
 
 
-def get_vdw_radius(element):
-    if element in vdw_dict:
-        r = vdw_dict[element]
-    else:
-        r = 1.9
-    return r
+def get_vdw_radius(element: str, default: float = 1.9) -> float:
+    """
+    Get the van der Waals radius for a given chemical element.
+
+    Args:
+        element (str): The chemical element symbol
+        default (float, optional): Default radius if element not found. Defaults to 1.9 Å.
+
+    Returns:
+        float: Van der Waals radius in Angstroms
+
+    Example:
+        >>> get_vdw_radius('C')
+        1.95
+        >>> get_vdw_radius('Unknown', 2.0)
+        2.0
+    """
+    return VDW_RADII.get(element, default)

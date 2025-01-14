@@ -1,94 +1,92 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-
 #include <iostream>
 #include <fstream>
 
 namespace py = pybind11;
 
-void fill_exclusion_mask(py::array_t<bool> &py_mask,
-                         const py::array_t<double> &py_delta,
-                         const py::array_t<double> &py_oe,
-                         const py::array_t<double> &py_atom_coords,
-                         const py::array_t<double> &py_vdw_radii,
-                         const double &max_vdw_radius,
+void fill_exclusion_mask(py::array_t<bool> &mask_array,
+                         const py::array_t<double> &grid_spacing,
+                         const py::array_t<double> &origin,
+                         const py::array_t<double> &atom_positions,
+                         const py::array_t<double> &atomic_radii,
+                         const double &max_atomic_radius,
                          const double &probe_radius)
 {
-    auto mask = py_mask.mutable_unchecked<3>();
-    const auto delta = py_delta.unchecked<1>();
-    const auto atom_coords = py_atom_coords.unchecked<2>();
-    const auto vdw_radii = py_vdw_radii.unchecked<1>();
-    const auto oe = py_oe.unchecked<1>();
+    // Get mutable/const references to numpy arrays
+    auto mask = mask_array.mutable_unchecked<3>();
+    const auto spacing = grid_spacing.unchecked<1>();
+    const auto atoms = atom_positions.unchecked<2>();
+    const auto radii = atomic_radii.unchecked<1>();
+    const auto grid_origin = origin.unchecked<1>();
 
-    double exclusion_dist, exclusion_dist2;
-    double z, z_dist, y, y_dist, x, x_dist, dist2;
-    int32_t i, j, k;
-    int32_t atom_idx, k_region, j_region, i_region;
-    int32_t atom_i, atom_j, atom_k;
+    // Precompute half grid spacings
+    const double half_spacing_x = spacing(0) * 0.5;
+    const double half_spacing_y = spacing(1) * 0.5;
+    const double half_spacing_z = spacing(2) * 0.5;
 
-    const double half_delta_x = delta(0) / 2.0,
-                 half_delta_y = delta(1) / 2.0,
-                 half_delta_z = delta(2) / 2.0;
+    // Maximum distance to check for exclusion
+    const double max_check_distance = max_atomic_radius + probe_radius;
 
-    const double max_exclusion_dist = max_vdw_radius + probe_radius;
+    // Calculate grid cell limits for checking neighbors
+    const int32_t max_cells_x = static_cast<int32_t>((max_check_distance + spacing(0) * 1.5) / spacing(0));
+    const int32_t max_cells_y = static_cast<int32_t>((max_check_distance + spacing(1) * 1.5) / spacing(1));
+    const int32_t max_cells_z = static_cast<int32_t>((max_check_distance + spacing(2) * 1.5) / spacing(2));
 
-    // maximum dist (in cells) we want to check from a cell
-    const int32_t i_limit = (max_exclusion_dist + delta(0) * 1.5) / delta(0),
-                  j_limit = (max_exclusion_dist + delta(1) * 1.5) / delta(1),
-                  k_limit = (max_exclusion_dist + delta(2) * 1.5) / delta(2);
-
-    for (atom_idx = 0; atom_idx < atom_coords.shape(0); atom_idx++)
+    // Process each atom
+    for (int32_t atom_idx = 0; atom_idx < atoms.shape(0); ++atom_idx)
     {
-        // exclusion dist. van der waals radius + probe_radius (probe or probe + skin)
-        exclusion_dist = vdw_radii(atom_idx) + probe_radius;
-        exclusion_dist2 = exclusion_dist * exclusion_dist;
+        // Calculate exclusion radius for current atom
+        const double exclusion_radius = radii(atom_idx) + probe_radius;
+        const double exclusion_radius_sq = exclusion_radius * exclusion_radius;
 
-        // get grid cell coords from the atom's euclidean coords
-        atom_i = (atom_coords(atom_idx, 0) + half_delta_x - oe(0)) / delta(0);
-        atom_j = (atom_coords(atom_idx, 1) + half_delta_y - oe(1)) / delta(1);
-        atom_k = (atom_coords(atom_idx, 2) + half_delta_z - oe(2)) / delta(2);
+        // Convert atom position to grid coordinates
+        const int32_t grid_x = static_cast<int32_t>((atoms(atom_idx, 0) + half_spacing_x - grid_origin(0)) / spacing(0));
+        const int32_t grid_y = static_cast<int32_t>((atoms(atom_idx, 1) + half_spacing_y - grid_origin(1)) / spacing(1));
+        const int32_t grid_z = static_cast<int32_t>((atoms(atom_idx, 2) + half_spacing_z - grid_origin(2)) / spacing(2));
 
-        for (k_region = -k_limit; k_region <= k_limit; k_region++)
+        // Iterate over neighboring grid cells
+        for (int32_t dz = -max_cells_z; dz <= max_cells_z; ++dz)
         {
-            k = k_region + atom_k;
-            // check if the cell falls out of the grid
-            if (k <= 0 or k > mask.shape(2))
+            const int32_t z = grid_z + dz;
+            if (z <= 0 || z > mask.shape(2))
                 continue;
 
-            // discrete grid coords back to euclidean space to check dists
-            z = k * delta(2) + oe(2);
-            z_dist = z - atom_coords(atom_idx, 2);
-            if (z_dist > exclusion_dist)
+            const double world_z = z * spacing(2) + grid_origin(2);
+            const double delta_z = world_z - atoms(atom_idx, 2);
+            if (std::abs(delta_z) > exclusion_radius)
                 continue;
 
-            for (j_region = -j_limit; j_region <= j_limit; j_region++)
+            for (int32_t dy = -max_cells_y; dy <= max_cells_y; ++dy)
             {
-                j = j_region + atom_j;
-                // check if the cell falls out of the grid
-                if (j <= 0 or j > mask.shape(1))
+                const int32_t y = grid_y + dy;
+                if (y <= 0 || y > mask.shape(1))
                     continue;
 
-                y = j * delta(1) + oe(1);
-                y_dist = y - atom_coords(atom_idx, 1);
-                if (y_dist > exclusion_dist)
+                const double world_y = y * spacing(1) + grid_origin(1);
+                const double delta_y = world_y - atoms(atom_idx, 1);
+                if (std::abs(delta_y) > exclusion_radius)
                     continue;
 
-                for (i_region = -i_limit; i_region <= i_limit; i_region++)
+                for (int32_t dx = -max_cells_x; dx <= max_cells_x; ++dx)
                 {
-                    i = i_region + atom_i;
-                    // check if the cell falls out of the grid
-                    if (i <= 0 or i > mask.shape(0))
+                    const int32_t x = grid_x + dx;
+                    if (x <= 0 || x > mask.shape(0))
                         continue;
 
-                    if (mask(i - 1, j - 1, k - 1) == true)
+                    // Skip if cell is already marked
+                    if (mask(x - 1, y - 1, z - 1))
                         continue;
 
-                    x = i * delta(0) + oe(0);
-                    x_dist = x - atom_coords(atom_idx, 0);
-                    dist2 = x_dist * x_dist + y_dist * y_dist + z_dist * z_dist;
-                    if (dist2 > exclusion_dist2)
-                        continue;
-                    mask(i - 1, j - 1, k - 1) = true;
+                    const double world_x = x * spacing(0) + grid_origin(0);
+                    const double delta_x = world_x - atoms(atom_idx, 0);
+
+                    // Check if point is within exclusion sphere
+                    const double dist_sq = delta_x * delta_x + delta_y * delta_y + delta_z * delta_z;
+                    if (dist_sq <= exclusion_radius_sq)
+                    {
+                        mask(x - 1, y - 1, z - 1) = true;
+                    }
                 }
             }
         }
@@ -98,20 +96,18 @@ void fill_exclusion_mask(py::array_t<bool> &py_mask,
 PYBIND11_MODULE(potsimlib, m)
 {
     m.doc() = R"pbdoc(
-    pybind11 skin plugin
-    -----------------------
+    pybind11 exclusion mask module
+    -----------------------------
 
-    .. currentmodule:: skin
-
-    .. autosummary::
-        :toctree: _generate
-
-        fill_exclusion_mask
+    Provides functionality for creating molecular exclusion masks.
     )pbdoc";
 
-    m.def("fill_exclusion_mask", &fill_exclusion_mask, py::call_guard<py::gil_scoped_release>(), R"pbdoc(
-        Fill exclusion mask
-        
-        Fill an spherical mask for given set of coordinates and radius.
-    )pbdoc");
+    m.def("fill_exclusion_mask", &fill_exclusion_mask,
+          py::call_guard<py::gil_scoped_release>(),
+          R"pbdoc(
+          Fill exclusion mask for a set of atoms.
+          
+          Creates a spherical exclusion mask around atoms based on their 
+          van der Waals radii and a probe radius.
+          )pbdoc");
 }

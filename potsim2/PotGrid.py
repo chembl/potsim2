@@ -35,7 +35,7 @@ class PotGrid(Grid):
         self.universe = Universe(pdb_filename)
         self.protein = self.universe.select_atoms("protein")
         self.protein_center = self.protein.atoms.positions.mean(-2)
-        self.oe = self.origin - self.protein_center
+        self.origin_offset = self.origin - self.protein_center
 
     def __copy_with_new_grid(self, grid, edges=None):
         """
@@ -83,7 +83,13 @@ class PotGrid(Grid):
 
         mask1 = np.zeros(self.grid.shape, dtype=bool)
         fill_exclusion_mask(
-            mask1, self.delta, self.oe, atom_coords, vdw_radii, vdw_radii.max(), probe,
+            mask1,
+            self.delta,
+            self.origin_offset,
+            atom_coords,
+            vdw_radii,
+            vdw_radii.max(),
+            probe,
         )
         mask1 = np.invert(mask1)
 
@@ -91,7 +97,7 @@ class PotGrid(Grid):
         fill_exclusion_mask(
             mask2,
             self.delta,
-            self.oe,
+            self.origin_offset,
             atom_coords,
             vdw_radii,
             vdw_radii.max(),
@@ -108,7 +114,7 @@ class PotGrid(Grid):
         fill_exclusion_mask(
             mask,
             self.delta,
-            self.oe,
+            self.origin_offset,
             np.asarray(sphere_center).reshape(1, -1),
             np.asarray([0]),
             0,
@@ -127,7 +133,7 @@ class PotGrid(Grid):
         fill_exclusion_mask(
             mask,
             self.delta,
-            self.oe,
+            self.origin_offset,
             atom_coords,
             np.zeros(atom_coords.shape[0]),
             0,
@@ -147,7 +153,7 @@ class PotGrid(Grid):
         fill_exclusion_mask(
             mask,
             self.delta,
-            self.oe,
+            self.origin_offset,
             res_coords,
             np.zeros(res_coords.shape[0]),
             0,
